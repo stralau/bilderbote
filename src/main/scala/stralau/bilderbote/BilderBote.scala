@@ -1,20 +1,22 @@
 package stralau.bilderbote
 
-import akka.http.scaladsl.model.{MediaType, MediaTypes}
+import akka.http.scaladsl.model.MediaTypes
+import akka.http.scaladsl.model.MediaTypes.{`image/gif`, `image/jpeg`, `image/png`}
 import com.danielasfregola.twitter4s.entities.Tweet
 import com.typesafe.scalalogging.Logger
+import stralau.bilderbote.TwitterImageClient.knownMediaTypes
+import stralau.bilderbote.Util.retry
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.implicitConversions
-import scala.util.{Failure, Success}
 
 object BilderBote {
 
   val twitterMaxImageSize = 5242880
 
-  private val logger = Logger("application")
+  private implicit val logger: Logger = Logger("application")
 
   private val wikimediaClient = WikimediaClient()
   private val twitterImageClient = TwitterImageClient()
@@ -24,60 +26,40 @@ object BilderBote {
 
   def run: Tweet = {
     val image = fetchImage
-    val f =
+    val createTweets =
       retry(() => twitterImageClient.post(image))(3)
-        .flatMap (tweet =>
-          retry(() => twitterAttributionClient.tweetAttribution(image,tweet))(3)
+        .flatMap(tweet =>
+          retry(() => twitterAttributionClient.tweetAttribution(image, tweet))(3)
             .recoverWith {
               case _ =>
                 logger.info("Cleaning up after Failure")
                 twitterImageClient.deleteTweet(tweet)
             }
         )
-    Await.result(f, 2.minutes)
+    Await.result(createTweets, 2.minutes)
   }
 
-  private def fetchImage: WikimediaObject = {
-    wikimediaClient.getMetadata(wikimediaClient.fetchRandomFileLocation) match {
-      case Right(image) if valid(image) => image
-      case Right(_) => fetchImage
+  private def fetchImage: WikimediaObject =
+    wikimediaClient
+      .getMetadata(wikimediaClient.fetchRandomFileLocation)
+      .flatMap(validate)
+    match {
       case Left(error) =>
-        logger.info(s"Error when fetching image: $error")
+        logger.warn(error)
         fetchImage
+      case Right(image) => image
     }
+
+  private def validate(image: WikimediaObject): Either[String, WikimediaObject] =
+    validateMediaType(image).flatMap(validateSize)
+
+  private def validateSize(image: WikimediaObject): Either[String, WikimediaObject] =
+    if (image.image.length <= twitterMaxImageSize) Right(image)
+    else Left("Image size too large")
+
+  private def validateMediaType(image: WikimediaObject): Either[String, WikimediaObject] = {
+    if (knownMediaTypes.contains(image.mediaType)) Right(image)
+    else Left("Wrong media type")
   }
 
-
-  private def valid(image: WikimediaObject): Boolean = {
-    if (!knownMediaType(image)) {
-      logger.warn("Wrong mediaType")
-      return false
-    }
-    if (!imageSize(image)) {
-      logger.warn("Image size too large")
-      return false
-    }
-    true
-  }
-
-  private def imageSize(image: WikimediaObject) =
-    image.image.length <= twitterMaxImageSize
-
-  private def knownMediaType(image: WikimediaObject) = List(
-    MediaTypes.`image/jpeg`,
-    MediaTypes.`image/png`,
-    MediaTypes.`image/gif`
-  ).contains(image.mediaType)
-
-
-  private def retry[T](action: () => Future[T])(times: Int): Future[T] = {
-    action().andThen {
-      case Success(t) => t
-      case Failure(exception) if times > 0 =>
-        logger.warn("Retrying after failure: " + exception.getMessage)
-        retry(action)(times - 1)
-      case Failure(exception) =>
-        logger.error("Failure: " + exception.getMessage)
-    }
-  }
 }

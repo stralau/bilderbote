@@ -1,5 +1,6 @@
 package stralau.bilderbote
 
+import akka.http.scaladsl.model.MediaTypes.{`image/gif`, `image/jpeg`, `image/png`}
 import com.danielasfregola.twitter4s.TwitterRestClient
 import com.danielasfregola.twitter4s.entities.Tweet
 import com.typesafe.scalalogging.Logger
@@ -13,6 +14,8 @@ import scala.util.Success
 object TwitterImageClient {
 
   def apply() = new TwitterImageClient(TwitterRestClient())
+
+  val knownMediaTypes = List(`image/jpeg`, `image/png`, `image/gif`)
 
 }
 
