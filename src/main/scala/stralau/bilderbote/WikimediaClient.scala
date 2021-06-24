@@ -20,6 +20,11 @@ class WikimediaClient {
 
   private val backend = HttpURLConnectionBackend()
 
+  private val basicRequest = sttp.client3.basicRequest
+    .header("User-Agent", "Bilderbote: https://twitter.com/bilderbote")
+
+
+
   def getMetadata(location: String): Either[String, WikimediaObject] = {
     val xmlDesc = fetchXmlDesc(location)
     val imageLocation = (xmlDesc \ "file" \ "urls" \ "file").text
