@@ -24,11 +24,10 @@ class WikimediaClient {
     .header("User-Agent", "Bilderbote: https://twitter.com/bilderbote")
 
 
-
   def getMetadata(location: String): Either[String, WikimediaObject] = {
     val xmlDesc = fetchXmlDesc(location)
     val imageLocation = (xmlDesc \ "file" \ "urls" \ "file").text
-    val name = clean((xmlDesc \ "file" \ "name").text)
+    val name = removeSuffix(clean((xmlDesc \ "file" \ "name").text))
     val author = clean((xmlDesc \ "file" \ "author").text)
     val license = (xmlDesc \ "licenses" \ "license" \ "name").headOption.map(_.text).getOrElse("")
     val url = (xmlDesc \ "file" \ "urls" \ "description").text
@@ -37,6 +36,13 @@ class WikimediaClient {
       WikimediaObject(mt, body, name, author, license, url)
     }
   }
+
+  def removeSuffix(imageName: String): String =
+    List("jpeg", "jpg", "png", "gif")
+      .find(imageName.endsWith)
+      .map(suffix => ("\\." + suffix + "$").r)
+      .map(_.replaceFirstIn(imageName, ""))
+      .getOrElse(imageName)
 
   private def clean(s: String): String = {
     logger.info(s"raw string: $s")
