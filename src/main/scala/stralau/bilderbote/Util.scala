@@ -2,11 +2,10 @@ package stralau.bilderbote
 
 import com.danielasfregola.twitter4s.entities.Tweet
 import com.typesafe.scalalogging.Logger
-import stralau.bilderbote.BilderBote.logger
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object Util {
 
@@ -25,13 +24,11 @@ object Util {
   def url(tweet: Tweet) = s"https://twitter.com/${tweet.user.get.screen_name}/status/${tweet.id}"
 
   def retry[T](action: () => Future[T])(times: Int)(implicit logger: Logger): Future[T] = {
-    action().andThen {
-      case Success(t) => t
-      case Failure(exception) if times > 0 =>
-        logger.warn("Retrying after failure: " + exception.getMessage)
-        retry(action)(times - 1)
-      case Failure(exception) =>
-        logger.error("Failure: " + exception.getMessage)
+    action().recoverWith { case exception: Exception if times > 0 =>
+      logger.warn("Retrying after failure: " + exception.getMessage)
+      retry(action)(times - 1)
+    }.andThen {
+      case Failure(exception) => logger.error(s"Failure: ${exception.getMessage}")
     }
   }
 
