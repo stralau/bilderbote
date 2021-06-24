@@ -1,8 +1,7 @@
 package stralau.bilderbote
 
 import com.typesafe.scalalogging.Logger
-import org.scalatest.AsyncTestSuite
-import org.scalatest.funsuite.{AnyFunSuite, AsyncFunSuite}
+import org.scalatest.funsuite.AsyncFunSuite
 import stralau.bilderbote.Util.retry
 
 import scala.concurrent.Future
@@ -21,7 +20,7 @@ class UtilTest extends AsyncFunSuite {
       5
     }
 
-    Util.retry(action)(1).map(result => assert(result == 5))
+    retry(action)(1).map(result => assert(result == 5))
   }
 
   test("Fails after max number of retries") {

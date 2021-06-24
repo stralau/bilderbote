@@ -1,7 +1,5 @@
 package stralau.bilderbote
 
-import akka.http.scaladsl.model.MediaTypes
-import akka.http.scaladsl.model.MediaTypes.{`image/gif`, `image/jpeg`, `image/png`}
 import com.danielasfregola.twitter4s.entities.Tweet
 import com.typesafe.scalalogging.Logger
 import stralau.bilderbote.TwitterImageClient.knownMediaTypes
