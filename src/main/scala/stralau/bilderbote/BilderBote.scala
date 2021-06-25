@@ -24,8 +24,8 @@ object BilderBote {
   def main(args: Array[String]): Unit = run
 
   def run: Tweet = {
-    val image = retry(() => fetchImage)(3)
-    val createTweets =
+    val createTweets = retry { () =>
+      val image = retry(() => fetchImage)(3)
       retry(() => twitterImageClient.post(image))(3)
         .flatMap(tweet =>
           retry(() => twitterAttributionClient.tweetAttribution(image, tweet))(3)
@@ -35,6 +35,7 @@ object BilderBote {
                 twitterImageClient.deleteTweet(tweet)
             }
         )
+    }(3)
     Await.result(createTweets, 2.minutes)
   }
 

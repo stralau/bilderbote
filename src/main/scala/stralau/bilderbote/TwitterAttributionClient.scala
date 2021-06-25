@@ -30,7 +30,7 @@ object TwitterAttributionClient {
   private def readEnv(key: String): String = {
     sys.env.get(key).map {
       value =>
-//        logger.info(s"Env[$key] = $value")
+        //        logger.info(s"Env[$key] = $value")
         value
     }.getOrElse(throw new RuntimeException(s"Could not find env var $key"))
   }
@@ -41,8 +41,13 @@ class TwitterAttributionClient(twitterClient: TwitterRestClient, accountName: St
   implicit val logger: Logger = Logger[TwitterAttributionClient]
 
   def tweetAttribution(image: WikimediaObject, tweet: Tweet): Future[Tweet] = {
-    val status = s"@$accountName " +
-      List(s"Author: ${image.author}", s"Date: ${image.date}", s"Licence: ${image.licence}", s"Source: ${image.url}").mkString("\n")
+    val status = s"@$accountName " + List(
+      s"Author: ${image.author.take(50)}",
+      s"Date: ${image.date.take(30)}",
+      s"Licence: ${image.licence.take(40)}",
+      s"Source: ${image.url}"
+    ).mkString("\n")
+
     log(() => twitterClient.createTweet(status, in_reply_to_status_id = Some(tweet.id)), "tweet attribution")
       .andThen {
         case Success(tweet) =>
