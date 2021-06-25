@@ -42,7 +42,7 @@ class TwitterAttributionClient(twitterClient: TwitterRestClient, accountName: St
 
   def tweetAttribution(image: WikimediaObject, tweet: Tweet): Future[Tweet] = {
     val status = s"@$accountName " +
-      List(s"Author: ${image.author}", s"Licence: ${image.licence}", s"Source: ${image.url}").mkString("\n")
+      List(s"Author: ${image.author}", s"Date: ${image.date}", s"Licence: ${image.licence}", s"Source: ${image.url}").mkString("\n")
     log(() => twitterClient.createTweet(status, in_reply_to_status_id = Some(tweet.id)), "tweet attribution")
       .andThen {
         case Success(tweet) =>

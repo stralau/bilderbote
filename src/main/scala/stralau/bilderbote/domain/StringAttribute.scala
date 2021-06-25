@@ -52,3 +52,5 @@ case class Name(source: String) extends StringAttribute {
 case class Author(source: String) extends StringAttribute
 
 case class Licence(source: String) extends StringAttribute
+
+case class Date(source: String) extends StringAttribute

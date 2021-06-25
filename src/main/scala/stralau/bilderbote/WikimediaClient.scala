@@ -2,7 +2,7 @@ package stralau.bilderbote
 
 import akka.http.scaladsl.model.{ErrorInfo, MediaType}
 import com.typesafe.scalalogging.Logger
-import stralau.bilderbote.domain.{Author, Licence, Name, WikimediaObject}
+import stralau.bilderbote.domain.{Author, Date, Licence, Name, WikimediaObject}
 import sttp.client3._
 
 import scala.xml._
@@ -27,10 +27,11 @@ class WikimediaClient {
     val name = Name((xmlDesc \ "file" \ "name").text)
     val author = Author((xmlDesc \ "file" \ "author").text)
     val licence = Licence((xmlDesc \ "licenses" \ "license" \ "name").headOption.map(_.text).getOrElse(""))
+    val date = Date((xmlDesc \ "file" \ "date").text)
     val url = (xmlDesc \ "file" \ "urls" \ "description").text
     fetchImage(imageLocation).map { case (mt, body) =>
       logger.info(s"Fetched image $name with media type $mt")
-      WikimediaObject(mt, body, name, author, licence, url)
+      WikimediaObject(mt, body, name, author, licence, date, url)
     }
   }
 

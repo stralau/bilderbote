@@ -24,6 +24,7 @@ case class WikimediaObject(
   name: Name,
   author: Author,
   licence: Licence,
+  date: Date,
   url: String
 ) {
 
