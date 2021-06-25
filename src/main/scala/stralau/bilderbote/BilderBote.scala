@@ -5,6 +5,7 @@ import com.typesafe.scalalogging.Logger
 import stralau.bilderbote.Util.retry
 import stralau.bilderbote.domain.WikimediaObject
 
+import scala.annotation.tailrec
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -37,6 +38,7 @@ object BilderBote {
     Await.result(createTweets, 2.minutes)
   }
 
+  @tailrec
   private def fetchImage: WikimediaObject =
     wikimediaClient
       .getMetadata(wikimediaClient.fetchRandomFileLocation)

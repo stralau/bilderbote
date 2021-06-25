@@ -5,6 +5,8 @@ import stralau.bilderbote.BilderBote.twitterMaxImageSize
 import stralau.bilderbote.TwitterImageClient.knownMediaTypes
 import stralau.bilderbote.domain.WikimediaObject.{validateMediaType, validateSize}
 
+import java.io.ByteArrayInputStream
+
 object WikimediaObject {
   private def validateSize(image: WikimediaObject): Either[String, WikimediaObject] =
     if (image.image.length <= twitterMaxImageSize) Right(image)
@@ -28,5 +30,6 @@ case class WikimediaObject(
   def validate: Either[String, WikimediaObject] =
     validateMediaType(this).flatMap(validateSize)
 
+  def stream: ByteArrayInputStream = new ByteArrayInputStream(image)
 }
 

@@ -24,18 +24,23 @@ class TwitterImageClient(tweetClient: TwitterRestClient) {
 
   private implicit val logger: Logger = Logger[TwitterImageClient]
 
-  def post(image: WikimediaObject): Future[Tweet] = {
-    val stream = new ByteArrayInputStream(image.image)
-
-    for {
-      mediaDetails <-
-        log(() => tweetClient.uploadMediaFromInputStream(stream, image.image.length, image.mediaType), "image upload")
-      tweet <- log(() => tweetClient.createTweet(status = image.name.take(280), media_ids = List(mediaDetails.media_id)), "image tweet")
-        .andThen {
-          case Success(tweet) => logger.info(s"Tweet at ${url(tweet)}")
-        }
-    } yield tweet
-  }
+  def post(image: WikimediaObject): Future[Tweet] = for {
+    mediaDetails <-
+      log(
+        () => tweetClient.uploadMediaFromInputStream(
+          image.stream,
+          image.image.length,
+          image.mediaType
+        ), "image upload")
+    tweet <-
+      log(
+        () => tweetClient.createTweet(
+          status = image.name.take(280),
+          media_ids = List(mediaDetails.media_id)
+        ), "image tweet").andThen {
+        case Success(tweet) => logger.info(s"Tweet at ${url(tweet)}")
+      }
+  } yield tweet
 
   def deleteTweet(tweet: Tweet): Future[Tweet] =
     tweetClient.deleteTweet(tweet.id)
