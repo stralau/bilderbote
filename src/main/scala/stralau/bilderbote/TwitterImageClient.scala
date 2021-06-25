@@ -7,7 +7,6 @@ import com.typesafe.scalalogging.Logger
 import stralau.bilderbote.Util.{log, url}
 import stralau.bilderbote.domain.WikimediaObject
 
-import java.io.ByteArrayInputStream
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
