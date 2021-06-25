@@ -2,12 +2,9 @@ package stralau.bilderbote
 
 import akka.http.scaladsl.model.{ErrorInfo, MediaType}
 import com.typesafe.scalalogging.Logger
-import org.jsoup.Jsoup
+import stralau.bilderbote.domain.{Author, Licence, Name, WikimediaObject}
 import sttp.client3._
 
-import java.net.URLDecoder
-import scala.language.postfixOps
-import scala.util.Try
 import scala.xml._
 
 object WikimediaClient {
@@ -27,29 +24,14 @@ class WikimediaClient {
   def getMetadata(location: String): Either[String, WikimediaObject] = {
     val xmlDesc = fetchXmlDesc(location)
     val imageLocation = (xmlDesc \ "file" \ "urls" \ "file").text
-    val name = removeSuffix(clean((xmlDesc \ "file" \ "name").text))
-    val author = clean((xmlDesc \ "file" \ "author").text)
-    val license = (xmlDesc \ "licenses" \ "license" \ "name").headOption.map(_.text).getOrElse("")
+    val name = Name((xmlDesc \ "file" \ "name").text)
+    val author = Author((xmlDesc \ "file" \ "author").text)
+    val licence = Licence((xmlDesc \ "licenses" \ "license" \ "name").headOption.map(_.text).getOrElse(""))
     val url = (xmlDesc \ "file" \ "urls" \ "description").text
     fetchImage(imageLocation).map { case (mt, body) =>
       logger.info(s"Fetched image $name with media type $mt")
-      WikimediaObject(mt, body, name, author, license, url)
+      WikimediaObject(mt, body, name, author, licence, url)
     }
-  }
-
-  def removeSuffix(imageName: String): String =
-    List("jpeg", "jpg", "png", "gif")
-      .find(imageName.endsWith)
-      .map(suffix => ("\\." + suffix + "$").r)
-      .map(_.replaceFirstIn(imageName, ""))
-      .getOrElse(imageName)
-
-  private def clean(s: String): String = {
-    logger.info(s"raw string: $s")
-    val decoded = Try(URLDecoder.decode(s, "utf-8")).recover(_ => s).get
-    val clean = Jsoup.parse(decoded).text()
-    logger.info(s"cleaned up string: $clean")
-    clean
   }
 
   def fetchRandomFileLocation: String = {
@@ -103,13 +85,3 @@ class WikimediaClient {
 
 }
 
-case class Image(uri: String)
-
-case class WikimediaObject(
-  mediaType: MediaType,
-  image: Array[Byte],
-  name: String,
-  author: String,
-  licence: String,
-  url: String
-)

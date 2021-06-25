@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 object Util {
 
@@ -31,5 +31,16 @@ object Util {
       case Failure(exception) => logger.error(s"Failure: ${exception.getMessage}")
     }
   }
+
+  def retry[T](action: () => T)(times: Int)(implicit logger: Logger): T = {
+    Try(action()).recover {
+      case ex: Exception if times > 0 =>
+        logger.warn("Retrying after failure: " + ex.getMessage)
+        retry(action)(times - 1)
+      case ex: Exception =>
+        logger.error(s"Failure: ${ex.getMessage}")
+        throw ex
+    }
+  }.get
 
 }

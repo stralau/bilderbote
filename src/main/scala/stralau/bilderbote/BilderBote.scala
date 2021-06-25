@@ -2,8 +2,8 @@ package stralau.bilderbote
 
 import com.danielasfregola.twitter4s.entities.Tweet
 import com.typesafe.scalalogging.Logger
-import stralau.bilderbote.TwitterImageClient.knownMediaTypes
 import stralau.bilderbote.Util.retry
+import stralau.bilderbote.domain.WikimediaObject
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,7 +23,7 @@ object BilderBote {
   def main(args: Array[String]): Unit = run
 
   def run: Tweet = {
-    val image = fetchImage
+    val image = retry(() => fetchImage)(3)
     val createTweets =
       retry(() => twitterImageClient.post(image))(3)
         .flatMap(tweet =>
@@ -40,24 +40,12 @@ object BilderBote {
   private def fetchImage: WikimediaObject =
     wikimediaClient
       .getMetadata(wikimediaClient.fetchRandomFileLocation)
-      .flatMap(validate)
+      .flatMap(_.validate)
     match {
       case Left(error) =>
         logger.warn(error)
         fetchImage
       case Right(image) => image
     }
-
-  private def validate(image: WikimediaObject): Either[String, WikimediaObject] =
-    validateMediaType(image).flatMap(validateSize)
-
-  private def validateSize(image: WikimediaObject): Either[String, WikimediaObject] =
-    if (image.image.length <= twitterMaxImageSize) Right(image)
-    else Left("Image size too large")
-
-  private def validateMediaType(image: WikimediaObject): Either[String, WikimediaObject] = {
-    if (knownMediaTypes.contains(image.mediaType)) Right(image)
-    else Left("Wrong media type")
-  }
 
 }

@@ -4,6 +4,7 @@ import com.danielasfregola.twitter4s.TwitterRestClient
 import com.danielasfregola.twitter4s.entities.{AccessToken, ConsumerToken, Tweet}
 import com.typesafe.scalalogging.Logger
 import stralau.bilderbote.Util.{log, url}
+import stralau.bilderbote.domain.WikimediaObject
 
 import scala.concurrent.Future
 import scala.util.Success

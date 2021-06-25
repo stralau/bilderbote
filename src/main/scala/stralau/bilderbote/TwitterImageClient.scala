@@ -5,6 +5,7 @@ import com.danielasfregola.twitter4s.TwitterRestClient
 import com.danielasfregola.twitter4s.entities.Tweet
 import com.typesafe.scalalogging.Logger
 import stralau.bilderbote.Util.{log, url}
+import stralau.bilderbote.domain.WikimediaObject
 
 import java.io.ByteArrayInputStream
 import scala.concurrent.ExecutionContext.Implicits.global

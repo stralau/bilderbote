@@ -1,0 +1,54 @@
+package stralau.bilderbote.domain
+
+import com.typesafe.scalalogging.Logger
+import org.jsoup.Jsoup
+
+import java.net.URLDecoder
+import java.util.Locale
+import scala.util.Try
+
+trait StringAttribute {
+
+  implicit val logger: Logger = Logger[StringAttribute]
+
+  def source: String
+
+  def take(n: Int): String = toString.take(n)
+
+  override def toString: String = clean
+
+  private def clean: String = {
+    logger.info(s"Raw: $source")
+    val decoded = urlDecode(source)
+    val cleaned = stripHtml(decoded)
+    logger.info(s"Cleaned up: $cleaned")
+    cleaned
+  }
+
+  private def urlDecode(s: String): String = Try(URLDecoder.decode(s, "utf-8")).recover(_ => s).get
+
+  private def stripHtml(s: String): String = Jsoup.parse(s).text()
+
+}
+
+case class Image(uri: String)
+
+case class Name(source: String) extends StringAttribute {
+
+  override def toString: String = stripSuffix(super.toString)
+
+  def stripSuffix(s: String): String = {
+    val stripped = List("jpeg", "jpg", "png", "gif")
+      .find(source.toLowerCase(Locale.US).endsWith)
+      .map(suffix => ("(?i)\\." + suffix + "$").r)
+      .map(_.replaceFirstIn(source, ""))
+      .getOrElse(source)
+    logger.info(s"Stripped: $stripped")
+    stripped
+  }
+
+}
+
+case class Author(source: String) extends StringAttribute
+
+case class Licence(source: String) extends StringAttribute
