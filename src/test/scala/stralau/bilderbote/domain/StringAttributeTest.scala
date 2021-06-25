@@ -40,4 +40,9 @@ class StringAttributeTest extends AnyFunSuite {
     val n = Name("Hello, world.jpg.bar")
     assert(n.toString == "Hello, world.jpg.bar")
   }
+
+  test("Clean + strip suffix") {
+    val n = Name("Hello%2C%20world.jpg.bar")
+    assert(n.toString == "Hello, world.jpg.bar")
+  }
 }

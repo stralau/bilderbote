@@ -39,10 +39,10 @@ case class Name(source: String) extends StringAttribute {
 
   def stripSuffix(s: String): String = {
     val stripped = List("jpeg", "jpg", "png", "gif")
-      .find(source.toLowerCase(Locale.US).endsWith)
+      .find(s.toLowerCase(Locale.US).endsWith)
       .map(suffix => ("(?i)\\." + suffix + "$").r)
-      .map(_.replaceFirstIn(source, ""))
-      .getOrElse(source)
+      .map(_.replaceFirstIn(s, ""))
+      .getOrElse(s)
     logger.info(s"Stripped: $stripped")
     stripped
   }
