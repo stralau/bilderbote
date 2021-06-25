@@ -26,7 +26,7 @@ class WikimediaClient {
     val imageLocation = (xmlDesc \ "file" \ "urls" \ "file").text
     val name = Name((xmlDesc \ "file" \ "name").text)
     val author = Author((xmlDesc \ "file" \ "author").text)
-    val licence = Licence((xmlDesc \ "licenses" \ "license" \ "name").headOption.map(_.text).getOrElse(""))
+    val licence = Licence((xmlDesc \ "licenses" \ "license" \ "name").text)
     val date = Date((xmlDesc \ "file" \ "date").text)
     val url = (xmlDesc \ "file" \ "urls" \ "description").text
     fetchImage(imageLocation).map { case (mt, body) =>
