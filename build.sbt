@@ -15,6 +15,9 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "2.0.0",
   "org.jsoup" % "jsoup" % "1.13.1",
 
+  "org.scala-lang.modules" %% "scala-async" % "0.10.0",
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided,
+
   "org.scalactic" %% "scalactic" % "3.2.9",
   "org.scalatest" %% "scalatest" % "3.2.9" % "test"
 )

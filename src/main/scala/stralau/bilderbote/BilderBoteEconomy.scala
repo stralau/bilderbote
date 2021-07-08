@@ -15,7 +15,7 @@ object BilderBoteEconomy {
 
   def main(args: Array[String]): Unit = run
 
-  def run: Tweet =
+  def run: Option[Tweet] =
     Await.result(retry(() => twitterRetweetClient.retweetRandom())(3), 2.minutes)
 
 }
