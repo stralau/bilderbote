@@ -15,7 +15,7 @@ object BilderBote {
 
   val twitterMaxImageSize = 5242880
 
-  private implicit val logger: Logger = Logger("application")
+  private implicit val logger: Logger = Logger("bilderbote")
 
   private val wikimediaClient = WikimediaClient()
   private val twitterImageClient = TwitterImageClient()

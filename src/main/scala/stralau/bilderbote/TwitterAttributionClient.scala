@@ -3,12 +3,12 @@ package stralau.bilderbote
 import com.danielasfregola.twitter4s.TwitterRestClient
 import com.danielasfregola.twitter4s.entities.{AccessToken, ConsumerToken, Tweet}
 import com.typesafe.scalalogging.Logger
-import stralau.bilderbote.Util.{log, url}
+import stralau.bilderbote.Util.{log, readEnv, url}
 import stralau.bilderbote.domain.WikimediaObject
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object TwitterAttributionClient {
 
@@ -27,13 +27,6 @@ object TwitterAttributionClient {
     new TwitterAttributionClient(restClient, accountName)
   }
 
-  private def readEnv(key: String): String = {
-    sys.env.get(key).map {
-      value =>
-        //        logger.info(s"Env[$key] = $value")
-        value
-    }.getOrElse(throw new RuntimeException(s"Could not find env var $key"))
-  }
 }
 
 class TwitterAttributionClient(twitterClient: TwitterRestClient, accountName: String) {

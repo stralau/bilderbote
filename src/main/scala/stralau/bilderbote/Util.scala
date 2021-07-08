@@ -23,6 +23,8 @@ object Util {
 
   def url(tweet: Tweet) = s"https://twitter.com/${tweet.user.get.screen_name}/status/${tweet.id}"
 
+  def essentials(tweet: Tweet) = Seq(tweet.id, tweet.created_at, url(tweet)).mkString("Tweet(", ",", ")")
+
   def retry[T](action: () => Future[T])(times: Int)(implicit logger: Logger): Future[T] = {
     action().recoverWith { case exception: Exception if times > 0 =>
       logger.warn("Retrying after failure: " + exception.getMessage)
@@ -42,5 +44,13 @@ object Util {
         throw ex
     }
   }.get
+
+  def readEnv(key: String): String = {
+    sys.env.get(key).map {
+      value =>
+        //        logger.info(s"Env[$key] = $value")
+        value
+    }.getOrElse(throw new RuntimeException(s"Could not find env var $key"))
+  }
 
 }

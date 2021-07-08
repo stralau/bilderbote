@@ -7,6 +7,7 @@ import com.typesafe.scalalogging.Logger
 import stralau.bilderbote.Util.{log, url}
 import stralau.bilderbote.domain.WikimediaObject
 
+import java.time.{Instant, LocalDate, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
@@ -22,6 +23,11 @@ object TwitterImageClient {
 class TwitterImageClient(tweetClient: TwitterRestClient) {
 
   private implicit val logger: Logger = Logger[TwitterImageClient]
+
+  def getYesterdaysTweets: Future[Seq[Tweet]] = tweetClient.homeTimeline(exclude_replies = true).map {rd =>
+    val todayMidnight = Instant.from(LocalDate.now().atStartOfDay())
+    rd.data.filter(_.created_at.isBefore(todayMidnight))
+  }
 
   def post(image: WikimediaObject): Future[Tweet] = for {
     mediaDetails <-
