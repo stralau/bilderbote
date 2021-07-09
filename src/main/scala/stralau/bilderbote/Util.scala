@@ -14,10 +14,8 @@ object Util {
     action().andThen {
       case s: Success[T] =>
         logger.info(s"$actionName was successful")
-        s
       case Failure(ex) =>
         logger.info(s"$actionName failed: ${ex.getMessage}")
-        Failure(ex)
     }
   }
 
