@@ -17,13 +17,7 @@ trait StringAttribute {
 
   override def toString: String = clean
 
-  private def clean: String = {
-    logger.info(s"Raw: $source")
-    val decoded = urlDecode(source)
-    val cleaned = stripHtml(decoded)
-    logger.info(s"Cleaned up: $cleaned")
-    cleaned
-  }
+  private def clean: String = stripHtml(urlDecode(source))
 
   private def urlDecode(s: String): String = Try(URLDecoder.decode(s, "utf-8")).recover(_ => s).get
 
